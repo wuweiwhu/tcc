@@ -28,8 +28,8 @@
   } while (0);
 #define LEXER_ERROR(x)                                                         \
   do {                                                                         \
-    std::cout << "lexer error in line:" << m_currentLine << " " << x           \
-              << std::endl;                                                    \
+    std::cout << "lexer error in line:" << m_currentLine                       \
+              << " lexeme: " << lexeme << x << std::endl;                      \
     exit(-1);                                                                  \
   } while (0);
 
@@ -63,11 +63,14 @@ void Lexer::readChar() {
   m_currentCh = (char)ch;
 }
 Token Lexer::next() {
-  while (m_currentCh == ' ')
+  if (m_currentCh == ' ') {
     readChar();
-  while (m_currentCh == '\n') {
+    return next();
+  }
+  if (m_currentCh == '\n') {
     m_currentLine++;
     readChar();
+    return next();
   }
   if (s_charToToken.find(m_currentCh) != s_charToToken.end()) {
     char ch = m_currentCh;
@@ -648,8 +651,7 @@ Token Lexer::next() {
 std::vector<Token> Lexer::lex() {
   std::vector<Token> toks;
   while (!m_fileEnd) {
-    toks.push_back(next());
-    // std::cout << strTok[toks.back()] << std::endl;
+    toks.push_back(next()); std::cout << strTok[toks.back()] << std::endl;
   }
   return toks;
 }
