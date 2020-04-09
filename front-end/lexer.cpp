@@ -42,6 +42,7 @@ template <class T> static T convertTo(const std::string &s) {
 
 namespace front_end {
 namespace lexer {
+
 std::map<char, Token> Lexer::s_charToToken = {
     {'(', Token::OPEN_PAREN},  {')', Token::CLOSE_PAREN},
     {'[', Token::OPEN_BRAKET}, {']', Token::CLOSE_BRAKET},
@@ -361,7 +362,7 @@ Token Lexer::next() {
               lexeme += m_currentCh;
               readChar();
               if (END_TOK) {
-                return Token::FOR;
+                return Token::DOUBLE;
               }
               ID_LEXER
             }
@@ -493,12 +494,12 @@ Token Lexer::next() {
       LEXER_ERROR("incomplete string")
     }
     if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end()) {
-      m_strValueDBSet.insert(lexeme);                           
-      m_strValueDB.push_back(lexeme);                           
-      TokVal value;                                             
-      value.ULVal = m_strValueDB.size() - 1;                    
-      m_tokenValDB.push(value);                                 
-    }                                                           
+      m_strValueDBSet.insert(lexeme);
+      m_strValueDB.push_back(lexeme);
+      TokVal value;
+      value.ULVal = m_strValueDB.size() - 1;
+      m_tokenValDB.push(value);
+    }
     readChar();
     return Token::STRING;
   }
@@ -673,20 +674,43 @@ std::vector<Token> Lexer::lex() {
   std::vector<Token> toks;
   while (!m_fileEnd) {
     toks.push_back(next());
-    std::cout << strTok[toks.back()] << std::endl;
+#ifdef _DEBUG
+    // std::cout << strTok[toks.back()] << std::endl;
+#endif
   }
   return toks;
 }
+
+std::string Lexer::strTok(Token tok) {
+  static std::map<Token, std::string> tokToStr{
+      {Token::VOID, "VOID"},      {Token::CHAR, "CHAR"},
+      {Token::SHORT, "SHORT"},    {Token::FLOAT, "FLOAT"},
+      {Token::NUMBER, "NUMBER"},  {Token::INT, "INT"},
+      {Token::LONG, "LONG"},      {Token::UNSIGNED, "UNSIGNED"},
+      {Token::SIGNED, "SIGNED"},  {Token::FOR, "FOR"},
+      {Token::IF, "IF"},          {Token::ELSE, "ELSE"},
+      {Token::WHILE, "WHILE"},    {Token::DO, "DO"},
+      {Token::DOUBLE, "DOUBLE"},  {Token::UNION, "UNION"},
+      {Token::STRUCT, "STRUCT"},  {Token::STRING, "STRING"},
+      {Token::RETURN, "RETURN"},  {Token::IDENTIFIER, "IDENTIFIER"},
+      {Token::LT, "<"},           {Token::LE, "<="},
+      {Token::GT, ">"},           {Token::GE, ">="},
+      {Token::EQ, "=="},          {Token::ASSIGN, "="},
+      {Token::NOT, "!"},          {Token::NEG, "~"},
+      {Token::MUL, "*"},          {Token::DIV, "/"},
+      {Token::COMMENT, ""},       {Token::SUB, "-"},
+      {Token::ADD, "+"},          {Token::AND, "&"},
+      {Token::OR, "|"},           {Token::SUB_SUB, "--"},
+      {Token::AND_AND, "&&"},     {Token::OR_OR, "||"},
+      {Token::ADD_ADD, "++"},     {Token::MEMBER, "->"},
+      {Token::COMMA, ","},        {Token::SEMICOLON, ";"},
+      {Token::SHARP, "#"},        {Token::OPEN_PAREN, "("},
+      {Token::CLOSE_PAREN, ")"},  {Token::OPEN_BRAKET, "["},
+      {Token::CLOSE_BRAKET, "]"}, {Token::OPEN_BRACE, "{"},
+      {Token::CLOSE_BRACE, "}"},  {Token::END, "EOF"},
+  };
+
+  return tokToStr[tok];
+}
 } // namespace lexer
 } // namespace front_end
-
-using namespace front_end::lexer;
-int main() {
-  Lexer test("test.c");
-  auto toks = test.lex();
-  for (auto t : toks) {
-    std::cout << strTok[t] << " ";
-  }
-  std::cout << std::endl;
-  return 0;
-}
