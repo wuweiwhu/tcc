@@ -89,6 +89,7 @@ std::map<Token, std::string> strTok{
     {Token::DOUBLE, "DOUBLE"},
     {Token::UNION, "UNION"},
     {Token::STRUCT, "STRUCT"},
+    {Token::STRING, "STRING"},
     {Token::RETURN, "RETURN"},
     {Token::IDENTIFIER, "IDENTIFIER"},
     {Token::LT, "<"},

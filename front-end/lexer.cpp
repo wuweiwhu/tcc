@@ -475,11 +475,32 @@ Token Lexer::next() {
     ID_LEXER
   }
 
-  // ID.
+  // IDENTIFIER.
   if (m_currentCh == '_' || IS_ATOZ) {
     lexeme += m_currentCh;
     readChar();
     ID_LEXER
+  }
+
+  // STRING
+  if (m_currentCh == '"') {
+    readChar();
+    while (m_currentCh != '"' && m_currentCh != EOF) {
+      lexeme += m_currentCh;
+      readChar();
+    }
+    if (m_currentCh == EOF) {
+      LEXER_ERROR("incomplete string")
+    }
+    if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end()) {
+      m_strValueDBSet.insert(lexeme);                           
+      m_strValueDB.push_back(lexeme);                           
+      TokVal value;                                             
+      value.ULVal = m_strValueDB.size() - 1;                    
+      m_tokenValDB.push(value);                                 
+    }                                                           
+    readChar();
+    return Token::STRING;
   }
 
   // NOT && NOT_EQ.
@@ -651,7 +672,8 @@ Token Lexer::next() {
 std::vector<Token> Lexer::lex() {
   std::vector<Token> toks;
   while (!m_fileEnd) {
-    toks.push_back(next()); std::cout << strTok[toks.back()] << std::endl;
+    toks.push_back(next());
+    std::cout << strTok[toks.back()] << std::endl;
   }
   return toks;
 }
