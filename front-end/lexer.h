@@ -35,6 +35,7 @@ enum class Token {
   SUB,
   MUL,
   DIV,
+  MOD,
   ADD_ADD,
   SUB_SUB,
   MEMBER,
@@ -60,9 +61,10 @@ enum class Token {
   CLOSE_BRAKET,
   OPEN_BRACE,
   CLOSE_BRACE,
-  // Values.
-  STRING,
-  NUMBER,
+  // Constants.
+  STRINGCONST,
+  NUMBERCONST,
+  CHARCONST,
   // Others.
   END,
   NEW_LINE,

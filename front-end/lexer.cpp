@@ -49,7 +49,8 @@ std::map<char, Token> Lexer::s_charToToken = {
     {'{', Token::OPEN_BRACE},  {'}', Token::CLOSE_BRACE},
     {'\n', Token::NEW_LINE},   {'#', Token::SHARP},
     {'*', Token::MUL},         {',', Token::COMMA},
-    {';', Token::SEMICOLON},   {'~', Token::NEG}};
+    {';', Token::SEMICOLON},   {'~', Token::NEG},
+    {'%', Token::MOD}};
 Lexer::Lexer(const std::string &fileName)
     : m_filePath(fileName), m_currentLine(0), m_fileEnd(false) {
   m_codeStream.open(fileName.c_str(), std::fstream::in);
@@ -483,6 +484,21 @@ Token Lexer::next() {
     ID_LEXER
   }
 
+  // CHAR
+  if (m_currentCh == '\'') {
+    readChar();
+    if (m_fileEnd) {
+      LEXER_ERROR("incomplete char")
+    }
+    lexeme += m_currentCh;
+    readChar();
+    if (m_currentCh != '\'') {
+      LEXER_ERROR("error when lex char")
+    }
+    readChar();
+    return Token::CHARCONST;
+  }
+
   // STRING
   if (m_currentCh == '"') {
     readChar();
@@ -501,7 +517,7 @@ Token Lexer::next() {
       m_tokenValDB.push(value);
     }
     readChar();
-    return Token::STRING;
+    return Token::STRINGCONST;
   }
 
   // NOT && NOT_EQ.
@@ -613,7 +629,7 @@ Token Lexer::next() {
       TokVal value;
       value.ULVal = val;
       m_tokenValDB.push(value);
-      return Token::NUMBER;
+      return Token::NUMBERCONST;
     }
     if (m_currentCh == '.') {
       lexeme += ".";
@@ -626,7 +642,7 @@ Token Lexer::next() {
       TokVal value;
       value.DVal = val;
       m_tokenValDB.push(value);
-      return Token::NUMBER;
+      return Token::NUMBERCONST;
     }
   }
 
@@ -645,7 +661,7 @@ Token Lexer::next() {
       TokVal value;
       value.DVal = val;
       m_tokenValDB.push(value);
-      return Token::NUMBER;
+      return Token::NUMBERCONST;
     }
     if (m_currentCh == 'x' || m_currentCh == 'X') {
       lexeme += "x";
@@ -658,13 +674,13 @@ Token Lexer::next() {
       TokVal value;
       value.ULVal = val;
       m_tokenValDB.push(value);
-      return Token::NUMBER;
+      return Token::NUMBERCONST;
     }
     size_t val = convertTo<size_t>(lexeme);
     TokVal value;
     value.ULVal = val;
     m_tokenValDB.push(value);
-    return Token::NUMBER;
+    return Token::NUMBERCONST;
   }
   if (m_currentCh == EOF)
     return Token::END;
@@ -683,31 +699,58 @@ std::vector<Token> Lexer::lex() {
 
 std::string Lexer::strTok(Token tok) {
   static std::map<Token, std::string> tokToStr{
-      {Token::VOID, "VOID"},      {Token::CHAR, "CHAR"},
-      {Token::SHORT, "SHORT"},    {Token::FLOAT, "FLOAT"},
-      {Token::NUMBER, "NUMBER"},  {Token::INT, "INT"},
-      {Token::LONG, "LONG"},      {Token::UNSIGNED, "UNSIGNED"},
-      {Token::SIGNED, "SIGNED"},  {Token::FOR, "FOR"},
-      {Token::IF, "IF"},          {Token::ELSE, "ELSE"},
-      {Token::WHILE, "WHILE"},    {Token::DO, "DO"},
-      {Token::DOUBLE, "DOUBLE"},  {Token::UNION, "UNION"},
-      {Token::STRUCT, "STRUCT"},  {Token::STRING, "STRING"},
-      {Token::RETURN, "RETURN"},  {Token::IDENTIFIER, "IDENTIFIER"},
-      {Token::LT, "<"},           {Token::LE, "<="},
-      {Token::GT, ">"},           {Token::GE, ">="},
-      {Token::EQ, "=="},          {Token::ASSIGN, "="},
-      {Token::NOT, "!"},          {Token::NEG, "~"},
-      {Token::MUL, "*"},          {Token::DIV, "/"},
-      {Token::COMMENT, ""},       {Token::SUB, "-"},
-      {Token::ADD, "+"},          {Token::AND, "&"},
-      {Token::OR, "|"},           {Token::SUB_SUB, "--"},
-      {Token::AND_AND, "&&"},     {Token::OR_OR, "||"},
-      {Token::ADD_ADD, "++"},     {Token::MEMBER, "->"},
-      {Token::COMMA, ","},        {Token::SEMICOLON, ";"},
-      {Token::SHARP, "#"},        {Token::OPEN_PAREN, "("},
-      {Token::CLOSE_PAREN, ")"},  {Token::OPEN_BRAKET, "["},
-      {Token::CLOSE_BRAKET, "]"}, {Token::OPEN_BRACE, "{"},
-      {Token::CLOSE_BRACE, "}"},  {Token::END, "EOF"},
+      {Token::VOID, "VOID"},
+      {Token::CHAR, "CHAR"},
+      {Token::SHORT, "SHORT"},
+      {Token::FLOAT, "FLOAT"},
+      {Token::NUMBERCONST, "NUMBERCONST"},
+      {Token::INT, "INT"},
+      {Token::LONG, "LONG"},
+      {Token::UNSIGNED, "UNSIGNED"},
+      {Token::SIGNED, "SIGNED"},
+      {Token::FOR, "FOR"},
+      {Token::IF, "IF"},
+      {Token::ELSE, "ELSE"},
+      {Token::WHILE, "WHILE"},
+      {Token::DO, "DO"},
+      {Token::DOUBLE, "DOUBLE"},
+      {Token::UNION, "UNION"},
+      {Token::STRUCT, "STRUCT"},
+      {Token::STRINGCONST, "STRINGCONST"},
+      {Token::RETURN, "RETURN"},
+      {Token::IDENTIFIER, "IDENTIFIER"},
+      {Token::LT, "<"},
+      {Token::LE, "<="},
+      {Token::GT, ">"},
+      {Token::GE, ">="},
+      {Token::EQ, "=="},
+      {Token::ASSIGN, "="},
+      {Token::NOT, "!"},
+      {Token::NEG, "~"},
+      {Token::MUL, "*"},
+      {Token::DIV, "/"},
+      {Token::COMMENT, ""},
+      {Token::SUB, "-"},
+      {Token::ADD, "+"},
+      {Token::AND, "&"},
+      {Token::OR, "|"},
+      {Token::MOD, "%"},
+      {Token::SUB_SUB, "--"},
+      {Token::AND_AND, "&&"},
+      {Token::OR_OR, "||"},
+      {Token::ADD_ADD, "++"},
+      {Token::MEMBER, "->"},
+      {Token::COMMA, ","},
+      {Token::SEMICOLON, ";"},
+      {Token::SHARP, "#"},
+      {Token::OPEN_PAREN, "("},
+      {Token::CLOSE_PAREN, ")"},
+      {Token::OPEN_BRAKET, "["},
+      {Token::CLOSE_BRAKET, "]"},
+      {Token::OPEN_BRACE, "{"},
+      {Token::CLOSE_BRACE, "}"},
+      {Token::CHARCONST, "CHARCONST"},
+      {Token::END, "EOF"},
   };
 
   return tokToStr[tok];
