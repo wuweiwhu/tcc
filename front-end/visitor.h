@@ -3,12 +3,12 @@
 
 #include <assert.h>
 
-namespace front_end{
+namespace front_end {
 #include "ast_node.decl"
-namespace visitor{
+namespace visitor {
 class Visitor {
 public:
-  virtual void visit(const AstNode* node) final {
+  virtual void visit(const AstNode *node) final {
     assert(false && "Visit a AstNode!");
   }
   virtual void visit(const AstProgram *node) = 0;

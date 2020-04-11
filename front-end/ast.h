@@ -44,19 +44,20 @@ public:
 
 class AstDeclaration : public AstNode {
 public:
-  AstDeclaration(const std::string &name, AstType type) : AstNode(name + "Declaration", type) {}
+  AstDeclaration(const std::string &name, AstType type)
+      : AstNode(name + "Declaration", type) {}
   void accept(Visitor &visitor) const override { visitor.visit(this); }
   bool isVarDecl() { return m_type == AstType::ASTVARDECL; }
   bool isFuncDecl() { return m_type == AstType::ASTFUNCDECL; }
 };
-
 
 class AstDeclarationList : public AstNode {
 public:
   AstDeclarationList(const AstDeclaration *decl) : AstNode("DeclarationList") {
     m_child.push_back(decl);
   }
-  AstDeclarationList(const AstDeclarationList *declList, const AstDeclaration *decl)
+  AstDeclarationList(const AstDeclarationList *declList,
+                     const AstDeclaration *decl)
       : AstNode("DeclList") {
     m_child.push_back(declList);
     m_child.push_back(decl);
@@ -116,14 +117,12 @@ public:
 
 class AstVarDeclInit : public AstNode {
 public:
-  AstVarDeclInit(const AstVarDeclID* declID) : AstNode("VarDeclInit"){
+  AstVarDeclInit(const AstVarDeclID *declID) : AstNode("VarDeclInit") {
     m_child.push_back(declID);
   }
-  void accept(Visitor &visitor) const override{
-    visitor.visit(this);
-  }
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
   const AstVarDeclID *getVarDeclID() {
-    return static_cast<const AstVarDeclID*>(m_child[0]);
+    return static_cast<const AstVarDeclID *>(m_child[0]);
   }
 };
 
@@ -148,20 +147,20 @@ public:
   }
 };
 
-
 class AstVarDeclID : public AstNode {
   bool m_isArray;
   size_t m_arraySize;
   const std::string &m_ID;
+
 public:
-  explicit AstVarDeclID(const std::string &ID, bool isArray = false, size_t arraySize = 0) : AstNode("VarDeclID"), m_ID(ID), m_isArray(isArray), m_arraySize(arraySize){ 
-  }
-  void accept(Visitor &visitor) const override {
-    visitor.visit(this);
-  }
-  bool isArray() const {return m_isArray;}
-  bool getArraySize() const {return m_arraySize;}
-  const std::string &getID() const {return m_ID;}
+  explicit AstVarDeclID(const std::string &ID, bool isArray = false,
+                        size_t arraySize = 0)
+      : AstNode("VarDeclID"), m_ID(ID), m_isArray(isArray),
+        m_arraySize(arraySize) {}
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
+  bool isArray() const { return m_isArray; }
+  bool getArraySize() const { return m_arraySize; }
+  const std::string &getID() const { return m_ID; }
 };
 
 class AstFuncDeclaration : public AstDeclaration {

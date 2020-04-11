@@ -496,6 +496,7 @@ Token Lexer::next() {
       LEXER_ERROR("error when lex char")
     }
     readChar();
+    // TODO: Insert char value to DB.
     return Token::CHARCONST;
   }
 
