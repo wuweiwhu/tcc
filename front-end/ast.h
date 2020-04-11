@@ -2,21 +2,18 @@
 #define __AST_NODE_H__
 #include "lexer.h"
 #include "visitor.h"
+
+#include <assert.h>
+#include <string>
+#include <vector>
+
 namespace front_end {
 using namespace lexer;
-namespace parser {
+using namespace visitor;
+
+#include "ast_node.decl"
 
 enum class AstType { ASTNODE, ASTVARDECL, ASTFUNCDECL };
-
-class AstProgram;
-class AstConst;
-class AstDeclList;
-class AstVarDeclaration;
-class AstFuncDeclaration;
-class AstTypeSpecifier;
-class AstVarDeclList;
-class AstVarDeclInitialize;
-class AstVarDeclId;
 
 class AstNode {
   const std::string m_name;
@@ -30,49 +27,52 @@ protected:
 public:
   const std::string &getName() const { return m_name; }
   virtual void accept(Visitor &visitor) const {
-    assert(false && "Visit a AstNode!";)
+    assert(false && "Visit a AstNode!");
   };
 };
 
 class AstProgram : public AstNode {
 public:
-  AstProgram(const AstDeclList *DeclList) : AstNode("Program") {
+  AstProgram(const AstDeclarationList *DeclList) : AstNode("Program") {
     m_child.push_back(DeclList);
   }
   void accept(Visitor &visitor) const override { visitor.visit(this); }
-  const AstDeclList *getDeclList() const {
-    return static_cast<const AstDeclList *>(m_childe[0]);
+  const AstDeclarationList *getDeclList() const {
+    return static_cast<const AstDeclarationList *>(m_child[0]);
   }
 };
 
-class AstDecl : public AstNode {
+class AstDeclaration : public AstNode {
 public:
-  AstDecl(const std::string &name = "") : AstNode(name + "Declaration") {}
-  void accept(Visitor &visitot) const override { visitor.visit(this); }
+  AstDeclaration(const std::string &name, AstType type) : AstNode(name + "Declaration", type) {}
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
   bool isVarDecl() { return m_type == AstType::ASTVARDECL; }
   bool isFuncDecl() { return m_type == AstType::ASTFUNCDECL; }
 };
 
-class AstDeclList : public : AstNode {
+
+class AstDeclarationList : public AstNode {
 public:
-  AstDeclList(const AstDecl *decl) : m_child({decl}), AstNode("DeclList") {}
-  AstDeclList(const AstDeclList *declList, const AstDecl *decl)
+  AstDeclarationList(const AstDeclaration *decl) : AstNode("DeclarationList") {
+    m_child.push_back(decl);
+  }
+  AstDeclarationList(const AstDeclarationList *declList, const AstDeclaration *decl)
       : AstNode("DeclList") {
     m_child.push_back(declList);
     m_child.push_back(decl);
   }
-  void accept(Visitor &visitor) const override { visitor.vist(this); }
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
 
   bool hasOnlyOneDecl() const { return m_child.size() == 1; }
 
-  const AstDeclList *getDeclList() const {
-    return static_cast<const AstDeclList *>(m_child[0]);
+  const AstDeclarationList *getDeclList() const {
+    return static_cast<const AstDeclarationList *>(m_child[0]);
   }
-  const AstDeclList *getDecl() const {
+  const AstDeclaration *getDecl() const {
     assert(m_child.size() > 1 && "AstDeclList only has one childe!");
-    return static_cast<const AstDecl *>(m_child[1]);
+    return static_cast<const AstDeclaration *>(m_child[1]);
   }
-}
+};
 
 class AstTypeSpecifier : public AstNode {
   Token m_tokType;
@@ -85,23 +85,23 @@ public:
   bool isChar() const { return !m_isUnsigned && m_tokType == Token::CHAR; }
   bool isShort() const { return !m_isUnsigned && m_tokType == Token::SHORT; }
   bool isInt() const { return !m_isUnsigned && m_tokType == Token::INT; }
-  bool isLong() const { return !m_isUnsigned && m_tokType == Token::Long; }
+  bool isLong() const { return !m_isUnsigned && m_tokType == Token::LONG; }
   bool isUChar() const { return m_isUnsigned && m_tokType == Token::CHAR; }
   bool isUShort() const { return m_isUnsigned && m_tokType == Token::SHORT; }
-  bool isULong() const { return m_isUnsigned && m_tokType == Token::Long; }
+  bool isULong() const { return m_isUnsigned && m_tokType == Token::LONG; }
   bool isUInt() const {
-    return (m_isUnsigned && &&m_tokType == Token::INT) ||
+    return (m_isUnsigned && m_tokType == Token::INT) ||
            m_tokType == Token::UNSIGNED;
   }
   bool isFloat() const { return m_tokType == Token::FLOAT; }
   bool isDouble() const { return m_tokType == Token::DOUBLE; }
 };
 
-class AstVarDeclaration : public AstDecl {
+class AstVarDeclaration : public AstDeclaration {
 public:
   AstVarDeclaration(const AstTypeSpecifier *typeSpecifier,
                     const AstVarDeclList *varDeclList)
-      : AstDecl("Var", AstType::ASTVARDECL) {
+      : AstDeclaration("Var", AstType::ASTVARDECL) {
     m_child.push_back(typeSpecifier);
     m_child.push_back(varDeclList);
   }
@@ -114,14 +114,27 @@ public:
   }
 };
 
+class AstVarDeclInit : public AstNode {
+public:
+  AstVarDeclInit(const AstVarDeclID* declID) : AstNode("VarDeclInit"){
+    m_child.push_back(declID);
+  }
+  void accept(Visitor &visitor) const override{
+    visitor.visit(this);
+  }
+  const AstVarDeclID *getVarDeclID() {
+    return static_cast<const AstVarDeclID*>(m_child[0]);
+  }
+};
+
 class AstVarDeclList : public AstNode {
 public:
-  AstVarDeclList(const AstVarDeclList *list, const AstVarDeclInitialize *init)
+  AstVarDeclList(const AstVarDeclList *list, const AstVarDeclInit *init)
       : AstNode("AstVarDeclList") {
     m_child.push_back(list);
     m_child.push_back(init);
   }
-  AstVarDeclList(const AstVarDeclInitialize *init) : AstNode("AstVarDeclList") {
+  AstVarDeclList(const AstVarDeclInit *init) : AstNode("VarDeclList") {
     m_child.push_back(init);
   }
   void accept(Visitor &visitor) const override { visitor.visit(this); }
@@ -135,31 +148,28 @@ public:
   }
 };
 
-class AstVarDeclInit : public AstNode {
-public:
-  Ast
-}
 
-class AstFuncDeclaration : public AstDecl {
+class AstVarDeclID : public AstNode {
+  bool m_isArray;
+  size_t m_arraySize;
+  const std::string &m_ID;
 public:
-  AstFuncDeclaration() : AstDecl("Function", AstType::ASTFUNCDECL) {}
+  explicit AstVarDeclID(const std::string &ID, bool isArray = false, size_t arraySize = 0) : AstNode("VarDeclID"), m_ID(ID), m_isArray(isArray), m_arraySize(arraySize){ 
+  }
+  void accept(Visitor &visitor) const override {
+    visitor.visit(this);
+  }
+  bool isArray() const {return m_isArray;}
+  bool getArraySize() const {return m_arraySize;}
+  const std::string &getID() const {return m_ID;}
+};
+
+class AstFuncDeclaration : public AstDeclaration {
+public:
+  AstFuncDeclaration() : AstDeclaration("Function", AstType::ASTFUNCDECL) {}
   void accept(Visitor &visitor) const override { visitor.visit(this); }
 };
 
 class AstStmt : public AstNode {};
-class AstIfStmt : public AstStmt {};
-class AstForStmt : public AstStmt {};
-class AstWhileStmt : public AstStmt {};
-class AstDoWhileStmt : public AstStmt {};
-class AstCompoundStmt : public AstStmt {};
-class AstExpression : public AstNode {};
-class AstBinaryExpr : public AstExpression {};
-class AstUnaryExpr : public AstExpression {};
-class AstFunction : public AstNode {};
-class AstFunctionProto : public AstNode {};
-class AstFunctionBody : public AstCompoundStmt {};
-class AstFunctionDecl : public AstDecl {};
-
-} // namespace parser
 } // namespace front_end
 #endif

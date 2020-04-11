@@ -1,0 +1,16 @@
+class AstNode;
+class AstProgram;
+class AstDeclaration;
+class AstDeclarationList;
+class AstVarDeclaration;
+class AstTypeSpecifier;
+class AstVarDeclList;
+class AstVarDeclInit;
+class AstVarDeclID;
+class AstStmt;
+class AstExprStmt;
+class AstCompoundStmt;
+class AstReturnStmt;
+class AstFuncDeclaration;
+class AstParams;
+class AstParamList;
