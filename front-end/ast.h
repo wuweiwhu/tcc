@@ -31,17 +31,6 @@ public:
   };
 };
 
-class AstProgram : public AstNode {
-public:
-  AstProgram(const AstDeclarationList *DeclList) : AstNode("Program") {
-    m_child.push_back(DeclList);
-  }
-  void accept(Visitor &visitor) const override { visitor.visit(this); }
-  const AstDeclarationList *getDeclList() const {
-    return static_cast<const AstDeclarationList *>(m_child[0]);
-  }
-};
-
 class AstDeclaration : public AstNode {
 public:
   AstDeclaration(const std::string &name, AstType type)
@@ -75,6 +64,39 @@ public:
   }
 };
 
+class AstProgram : public AstNode {
+public:
+  AstProgram(const AstDeclarationList *DeclList) : AstNode("Program") {
+    m_child.push_back(DeclList);
+  }
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
+  const AstDeclarationList *getDeclList() const {
+    return static_cast<const AstDeclarationList *>(m_child[0]);
+  }
+};
+
+class AstVarDeclID : public AstNode {
+  bool m_isArray;
+  size_t m_arraySize;
+  const std::string &m_ID;
+
+public:
+  explicit AstVarDeclID(const std::string &ID, bool isArray = false,
+                        size_t arraySize = 0)
+      : AstNode("VarDeclID"), m_ID(ID), m_isArray(isArray),
+        m_arraySize(arraySize) {}
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
+  bool isArray() const { return m_isArray; }
+  bool getArraySize() const { return m_arraySize; }
+  const std::string &getID() const { return m_ID; }
+};
+
+class AstFuncDeclaration : public AstDeclaration {
+public:
+  AstFuncDeclaration() : AstDeclaration("Function", AstType::ASTFUNCDECL) {}
+  void accept(Visitor &visitor) const override { visitor.visit(this); }
+};
+
 class AstTypeSpecifier : public AstNode {
   Token m_tokType;
   bool m_isUnsigned;
@@ -96,23 +118,6 @@ public:
   }
   bool isFloat() const { return m_tokType == Token::FLOAT; }
   bool isDouble() const { return m_tokType == Token::DOUBLE; }
-};
-
-class AstVarDeclaration : public AstDeclaration {
-public:
-  AstVarDeclaration(const AstTypeSpecifier *typeSpecifier,
-                    const AstVarDeclList *varDeclList)
-      : AstDeclaration("Var", AstType::ASTVARDECL) {
-    m_child.push_back(typeSpecifier);
-    m_child.push_back(varDeclList);
-  }
-  void accept(Visitor &visitor) const override { visitor.visit(this); }
-  const AstTypeSpecifier *getTypeSpecifier() const {
-    return static_cast<const AstTypeSpecifier *>(m_child[0]);
-  }
-  const AstVarDeclList *getVarDeclList() const {
-    return static_cast<const AstVarDeclList *>(m_child[1]);
-  }
 };
 
 class AstVarDeclInit : public AstNode {
@@ -147,26 +152,21 @@ public:
   }
 };
 
-class AstVarDeclID : public AstNode {
-  bool m_isArray;
-  size_t m_arraySize;
-  const std::string &m_ID;
-
+class AstVarDeclaration : public AstDeclaration {
 public:
-  explicit AstVarDeclID(const std::string &ID, bool isArray = false,
-                        size_t arraySize = 0)
-      : AstNode("VarDeclID"), m_ID(ID), m_isArray(isArray),
-        m_arraySize(arraySize) {}
+  AstVarDeclaration(const AstTypeSpecifier *typeSpecifier,
+                    const AstVarDeclList *varDeclList)
+      : AstDeclaration("Var", AstType::ASTVARDECL) {
+    m_child.push_back(typeSpecifier);
+    m_child.push_back(varDeclList);
+  }
   void accept(Visitor &visitor) const override { visitor.visit(this); }
-  bool isArray() const { return m_isArray; }
-  bool getArraySize() const { return m_arraySize; }
-  const std::string &getID() const { return m_ID; }
-};
-
-class AstFuncDeclaration : public AstDeclaration {
-public:
-  AstFuncDeclaration() : AstDeclaration("Function", AstType::ASTFUNCDECL) {}
-  void accept(Visitor &visitor) const override { visitor.visit(this); }
+  const AstTypeSpecifier *getTypeSpecifier() const {
+    return static_cast<const AstTypeSpecifier *>(m_child[0]);
+  }
+  const AstVarDeclList *getVarDeclList() const {
+    return static_cast<const AstVarDeclList *>(m_child[1]);
+  }
 };
 
 class AstStmt : public AstNode {};

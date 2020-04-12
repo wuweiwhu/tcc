@@ -80,7 +80,12 @@ typedef union TokVal {
   double DVal;
 } TokVal;
 
-class Lexer {
+class LexerImpl {
+public:
+ virtual std::vector<Token> lex() = 0;
+};
+
+class Lexer : public LexerImpl {
   const std::string m_filePath;
   std::fstream m_codeStream;
   bool m_fileEnd;
@@ -125,7 +130,7 @@ public:
 
   static std::string strTok(Token);
 
-  std::vector<Token> lex();
+  std::vector<Token> lex() override;
 };
 } // namespace lexer
 } // namespace front_end
