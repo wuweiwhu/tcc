@@ -24,9 +24,7 @@ public:
 class LRParser : public ParserImpl {
 public:
   LRParser(std::ostream &errOut) : ParserImpl(errOut) {}
-  const AstProgram *parse(const std::vector<lexer::Token> &toks) override {
-    std::cout << "Parser" << std::endl;
-  }
+  const AstProgram *parse(const std::vector<lexer::Token> &toks) override;
 };
 
 } // namespace parser

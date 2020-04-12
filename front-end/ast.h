@@ -1,6 +1,6 @@
 #ifndef __AST_NODE_H__
 #define __AST_NODE_H__
-#include "lexer.h"
+#include "lexer_impl.h"
 #include "visitor.h"
 
 #include <assert.h>

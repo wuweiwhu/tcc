@@ -1,5 +1,7 @@
 #include "lexer_impl.h"
 
+#include "simple_utils.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -32,13 +34,6 @@
               << " lexeme: " << lexeme << x << std::endl;                      \
     exit(-1);                                                                  \
   } while (0);
-
-template <class T> static T convertTo(const std::string &s) {
-  std::stringstream ss(s);
-  T value;
-  ss >> value;
-  return value;
-}
 
 namespace front_end {
 namespace lexer {

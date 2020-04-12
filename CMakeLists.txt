@@ -6,6 +6,7 @@ set(CMAKE_CXX_COMPILER g++)
 set(CMAKE_CXX_STANDARD 14)
 
 set(FRONT_END_DIR ${CMAKE_SOURCE_DIR}/front-end)
+set(UTILS_DIR ${CMAKE_SOURCE_DIR}/utils)
 
 add_subdirectory(front-end)
 add_subdirectory(test)

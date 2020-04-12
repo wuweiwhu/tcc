@@ -1,4 +1,9 @@
 set(TARGET_NAME front_end)
+
+include_directories(
+${UTILS_DIR}
+)
+
 set(TARGET_SRC
     lexer_impl.cpp
     parser_impl.cpp
