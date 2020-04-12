@@ -2,6 +2,8 @@
 
 #include "ast.h"
 
+using namespace front_end::lexer;
+
 namespace front_end {
 namespace parser {
 const AstProgram *LRParser::parse(const std::vector<Token> &toks) {

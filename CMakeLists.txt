@@ -16,7 +16,7 @@ add_subdirectory(test)
 #add_subdirectory(tools)
 
 set(TCC_COMPONENTS tcc-front-end tcc-test)
-set(tcc_targets)
+set(tcc_component_mainfests)
 
 foreach (COMPONENT ${TCC_COMPONENTS})
 message(STATUS "Adding Component ${COMPONENT}")
@@ -25,8 +25,8 @@ set (mainfest ${CMKAE_CURRENT_BINARY_DIR}/target_mainfest_${COMPONENT}.txt)
       OUTPUT ${mainfest}
       COMMAND ${CMAKE_COMMAND} "-DCMAKE_INSTALL_COMPONENT=${COMPONENT}"
                                -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-      COMMENT "Compiling ${COMPONENT}")
-  list(APPEND tcc_targets ${mainfest})
+      COMMENT "Installing ${COMPONENT}")
+  list(APPEND tcc_component_mainfests ${mainfest})
 endforeach(COMPONENT)
 
-add_custom_target(tcc DEPENDS ${tcc_targets})
+add_custom_target(tcc DEPENDS ${tcc_component_mainfests})
