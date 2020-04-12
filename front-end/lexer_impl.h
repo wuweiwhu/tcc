@@ -82,10 +82,10 @@ typedef union TokVal {
 
 class LexerImpl {
 public:
- virtual std::vector<Token> lex() = 0;
+  virtual std::vector<Token> lex() = 0;
 };
 
-class Lexer : public LexerImpl {
+class SimpleLexer : public LexerImpl {
   const std::string m_filePath;
   std::fstream m_codeStream;
   bool m_fileEnd;
@@ -100,7 +100,7 @@ class Lexer : public LexerImpl {
   void readChar();
 
 public:
-  Lexer(const std::string &fileName);
+  SimpleLexer(const std::string &fileName);
   inline void getValue(int &value) {
     TokVal val = m_tokenValDB.front();
     m_tokenValDB.pop();

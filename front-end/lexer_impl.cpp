@@ -1,4 +1,4 @@
-#include "lexer.h"
+#include "lexer_impl.h"
 
 #include <fstream>
 #include <iostream>
@@ -43,7 +43,7 @@ template <class T> static T convertTo(const std::string &s) {
 namespace front_end {
 namespace lexer {
 
-std::map<char, Token> Lexer::s_charToToken = {
+std::map<char, Token> SimpleLexer::s_charToToken = {
     {'(', Token::OPEN_PAREN},  {')', Token::CLOSE_PAREN},
     {'[', Token::OPEN_BRAKET}, {']', Token::CLOSE_BRAKET},
     {'{', Token::OPEN_BRACE},  {'}', Token::CLOSE_BRACE},
@@ -51,12 +51,12 @@ std::map<char, Token> Lexer::s_charToToken = {
     {'*', Token::MUL},         {',', Token::COMMA},
     {';', Token::SEMICOLON},   {'~', Token::NEG},
     {'%', Token::MOD}};
-Lexer::Lexer(const std::string &fileName)
+SimpleLexer::SimpleLexer(const std::string &fileName)
     : m_filePath(fileName), m_currentLine(0), m_fileEnd(false) {
   m_codeStream.open(fileName.c_str(), std::fstream::in);
   readChar();
 }
-void Lexer::readChar() {
+void SimpleLexer::readChar() {
   int ch = m_codeStream.get();
   if (ch == EOF)
     m_fileEnd = true;
@@ -64,7 +64,7 @@ void Lexer::readChar() {
   // for skip those while loops in next function.
   m_currentCh = (char)ch;
 }
-Token Lexer::next() {
+Token SimpleLexer::next() {
   if (m_currentCh == ' ') {
     readChar();
     return next();
@@ -687,7 +687,7 @@ Token Lexer::next() {
     return Token::END;
   LEXER_ERROR("");
 }
-std::vector<Token> Lexer::lex() {
+std::vector<Token> SimpleLexer::lex() {
   std::vector<Token> toks;
   while (!m_fileEnd) {
     toks.push_back(next());
@@ -698,7 +698,7 @@ std::vector<Token> Lexer::lex() {
   return toks;
 }
 
-std::string Lexer::strTok(Token tok) {
+std::string SimpleLexer::strTok(Token tok) {
   static std::map<Token, std::string> tokToStr{
       {Token::VOID, "VOID"},
       {Token::CHAR, "CHAR"},

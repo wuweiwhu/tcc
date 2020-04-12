@@ -1,7 +1,8 @@
-set(TARGET_NAME Lexer)
+set(TARGET_NAME front_end)
 set(TARGET_SRC
-    lexer.cpp
+    lexer_impl.cpp
+    parser_impl.cpp
     parser.cpp
 )
 add_library(${TARGET_NAME}  ${TARGET_SRC})
-install(TARGETS Lexer DESTINATION ${CMAKE_BINARY_DIR}/lib COMPONENT tcc-front-end)
+install(TARGETS front_end DESTINATION ${CMAKE_BINARY_DIR}/lib COMPONENT tcc-front-end)

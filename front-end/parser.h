@@ -8,15 +8,14 @@
 #include <type_traits>
 #include <vector>
 
+namespace front_end {
+class AstProgram;
+namespace lexer {
+class LexerImpl;
+}
+} // namespace front_end
 
 namespace front_end {
-
-class AstProgram;
-
-namespace lexer {
-  class LexerImpl;
-}
-
 namespace parser {
 
 template <class LexerPolicy, class ParserPolicy> class Parser {

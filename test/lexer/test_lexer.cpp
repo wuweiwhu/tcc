@@ -1,14 +1,11 @@
-#include "lexer.h"
-
+#include "parser.h"
 #include <iostream>
 
 using namespace front_end::lexer;
+using namespace front_end::parser;
 int main() {
-  Lexer test("test.c");
-  auto toks = test.lex();
-  for (auto t : toks) {
-    std::cout << Lexer::strTok(t) << " ";
-  }
+  Parser<SimpleLexer, LRParser> par("test.c", std::cout);
+  par.parse();
   std::cout << std::endl;
   return 0;
 }
