@@ -6,9 +6,12 @@
 #include <set>
 #include <string>
 
-namespace front_end {
-namespace lexer {
-enum class Token {
+namespace front_end
+{
+namespace lexer
+{
+enum class Token
+{
   // builtin types.
   VOID,
   CHAR,
@@ -64,7 +67,6 @@ enum class Token {
   // Constants.
   STRINGCONST,
   NUMBERCONST,
-  CHARCONST,
   // Others.
   END,
   NEW_LINE,
@@ -76,16 +78,17 @@ enum class Token {
 
 typedef union TokVal {
   long LVal;
-  size_t ULVal;
   double DVal;
 } TokVal;
 
-class LexerImpl {
+class LexerImpl
+{
 public:
   virtual std::vector<Token> lex() = 0;
 };
 
-class SimpleLexer : public LexerImpl {
+class SimpleLexer : public LexerImpl
+{
   const std::string m_filePath;
   std::fstream m_codeStream;
   bool m_fileEnd;
@@ -101,30 +104,33 @@ class SimpleLexer : public LexerImpl {
 
 public:
   SimpleLexer(const std::string &fileName);
-  inline void getValue(int &value) {
+
+  // For int, uint, char, uchar, short, ushort, long, ulong.
+  template <class T>
+  inline void getUnsignedValue(T &value)
+  {
     TokVal val = m_tokenValDB.front();
     m_tokenValDB.pop();
-    value = (int)val.LVal;
+    value = val.LVal;
   }
-  inline void getValue(unsigned int &value) {
-    TokVal val = m_tokenValDB.front();
-    m_tokenValDB.pop();
-    value = (unsigned)val.ULVal;
+
+  inline void getValue(float &value)
+  {
+    double val = 0;
+    getValue(val);
+    value = (float)val;
   }
-  inline void getValue(float &value) {
-    TokVal val = m_tokenValDB.front();
-    m_tokenValDB.pop();
-    value = (float)val.DVal;
-  }
-  inline void getValue(double &value) {
+  inline void getValue(double &value)
+  {
     TokVal val = m_tokenValDB.front();
     m_tokenValDB.pop();
     value = val.DVal;
   }
-  inline void getValue(std::string &value) {
+  inline void getValue(std::string &value)
+  {
     TokVal val = m_tokenValDB.front();
     m_tokenValDB.pop();
-    size_t index = val.ULVal;
+    size_t index = val.LVal;
     value = m_strValueDB[index];
   }
 
