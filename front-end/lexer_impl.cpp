@@ -7,51 +7,54 @@
 #include <sstream>
 
 #define IS_DIGIT (m_currentCh >= '0' && m_currentCh <= '9')
-#define IS_ATOZ                                                                \
-  ((m_currentCh >= 'a' && m_currentCh <= 'z') ||                               \
+#define IS_ATOZ                                  \
+  ((m_currentCh >= 'a' && m_currentCh <= 'z') || \
    (m_currentCh >= 'A' && m_currentCh <= 'Z'))
-#define END_TOK                                                                \
-  (m_currentCh == ' ' || m_currentCh == '\n' || m_currentCh == ';' ||          \
+#define END_TOK                                                       \
+  (m_currentCh == ' ' || m_currentCh == '\n' || m_currentCh == ';' || \
    m_currentCh == EOF)
-#define ID_LEXER                                                               \
-  do {                                                                         \
-    while (IS_DIGIT || IS_ATOZ || m_currentCh == '_') {                        \
-      lexeme += m_currentCh;                                                   \
-      readChar();                                                              \
-    }                                                                          \
-    if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end()) {               \
-      m_strValueDBSet.insert(lexeme);                                          \
-      m_strValueDB.push_back(lexeme);                                          \
-      TokVal value;                                                            \
-      value.ULVal = m_strValueDB.size() - 1;                                   \
-      m_tokenValDB.push(value);                                                \
-    }                                                                          \
-    return Token::IDENTIFIER;                                                  \
+#define ID_LEXER                                               \
+  do                                                           \
+  {                                                            \
+    while (IS_DIGIT || IS_ATOZ || m_currentCh == '_')          \
+    {                                                          \
+      lexeme += m_currentCh;                                   \
+      readChar();                                              \
+    }                                                          \
+    if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end()) \
+    {                                                          \
+      m_strValueDBSet.insert(lexeme);                          \
+      m_strValueDB.push_back(lexeme);                          \
+      TokVal value;                                            \
+      value.LVal = m_strValueDB.size() - 1;                    \
+      m_tokenValDB.push(value);                                \
+    }                                                          \
+    return Token::IDENTIFIER;                                  \
   } while (0);
-#define LEXER_ERROR(x)                                                         \
-  do {                                                                         \
-    std::cout << "lexer error in line:" << m_currentLine                       \
-              << " lexeme: " << lexeme << x << std::endl;                      \
-    exit(-1);                                                                  \
+#define LEXER_ERROR(x)                                    \
+  do                                                      \
+  {                                                       \
+    std::cout << "lexer error in line:" << m_currentLine  \
+              << " lexeme: " << lexeme << x << std::endl; \
+    exit(-1);                                             \
   } while (0);
 
-namespace front_end {
-namespace lexer {
+namespace front_end
+{
+namespace lexer
+{
+bool SimpleLexer::g_isMinus = false;
 
 std::map<char, Token> SimpleLexer::s_charToToken = {
-    {'(', Token::OPEN_PAREN},  {')', Token::CLOSE_PAREN},
-    {'[', Token::OPEN_BRAKET}, {']', Token::CLOSE_BRAKET},
-    {'{', Token::OPEN_BRACE},  {'}', Token::CLOSE_BRACE},
-    {'\n', Token::NEW_LINE},   {'#', Token::SHARP},
-    {'*', Token::MUL},         {',', Token::COMMA},
-    {';', Token::SEMICOLON},   {'~', Token::NEG},
-    {'%', Token::MOD}};
+    {'(', Token::OPEN_PAREN}, {')', Token::CLOSE_PAREN}, {'[', Token::OPEN_BRAKET}, {']', Token::CLOSE_BRAKET}, {'{', Token::OPEN_BRACE}, {'}', Token::CLOSE_BRACE}, {'\n', Token::NEW_LINE}, {'#', Token::SHARP}, {'*', Token::MUL}, {',', Token::COMMA}, {';', Token::SEMICOLON}, {'~', Token::NEG}, {'%', Token::MOD}};
 SimpleLexer::SimpleLexer(const std::string &fileName)
-    : m_filePath(fileName), m_currentLine(0), m_fileEnd(false) {
+    : m_filePath(fileName), m_currentLine(0), m_fileEnd(false)
+{
   m_codeStream.open(fileName.c_str(), std::fstream::in);
   readChar();
 }
-void SimpleLexer::readChar() {
+void SimpleLexer::readChar()
+{
   int ch = m_codeStream.get();
   if (ch == EOF)
     m_fileEnd = true;
@@ -59,17 +62,21 @@ void SimpleLexer::readChar() {
   // for skip those while loops in next function.
   m_currentCh = (char)ch;
 }
-Token SimpleLexer::next() {
-  if (m_currentCh == ' ') {
+Token SimpleLexer::next()
+{
+  if (m_currentCh == ' ')
+  {
     readChar();
     return next();
   }
-  if (m_currentCh == '\n') {
+  if (m_currentCh == '\n')
+  {
     m_currentLine++;
     readChar();
     return next();
   }
-  if (s_charToToken.find(m_currentCh) != s_charToToken.end()) {
+  if (s_charToToken.find(m_currentCh) != s_charToToken.end())
+  {
     char ch = m_currentCh;
     readChar();
     return s_charToToken[ch];
@@ -77,24 +84,30 @@ Token SimpleLexer::next() {
   std::string lexeme;
 
   // IF && INT && ID.
-  if (m_currentCh == 'i') {
+  if (m_currentCh == 'i')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'f') {
+    if (m_currentCh == 'f')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (END_TOK) {
+      if (END_TOK)
+      {
         return Token::IF;
       }
       ID_LEXER
     }
-    if (m_currentCh == 'n') {
+    if (m_currentCh == 'n')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 't') {
+      if (m_currentCh == 't')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (END_TOK) {
+        if (END_TOK)
+        {
           return Token::INT;
         }
         ID_LEXER
@@ -105,19 +118,24 @@ Token SimpleLexer::next() {
   }
 
   // CHAR && ID.
-  if (m_currentCh == 'c') {
+  if (m_currentCh == 'c')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'h') {
+    if (m_currentCh == 'h')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'a') {
+      if (m_currentCh == 'a')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'r') {
+        if (m_currentCh == 'r')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (END_TOK) {
+          if (END_TOK)
+          {
             return Token::CHAR;
           }
           ID_LEXER
@@ -130,25 +148,32 @@ Token SimpleLexer::next() {
   }
 
   // RETURN && ID.
-  if (m_currentCh == 'r') {
+  if (m_currentCh == 'r')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'e') {
+    if (m_currentCh == 'e')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 't') {
+      if (m_currentCh == 't')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'u') {
+        if (m_currentCh == 'u')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'r') {
+          if (m_currentCh == 'r')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 'n') {
+            if (m_currentCh == 'n')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (END_TOK) {
+              if (END_TOK)
+              {
                 return Token::RETURN;
               }
               ID_LEXER
@@ -165,19 +190,24 @@ Token SimpleLexer::next() {
   }
 
   // VOID && ID.
-  if (m_currentCh == 'v') {
+  if (m_currentCh == 'v')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'o') {
+    if (m_currentCh == 'o')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'i') {
+      if (m_currentCh == 'i')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'd') {
+        if (m_currentCh == 'd')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (END_TOK) {
+          if (END_TOK)
+          {
             return Token::VOID;
           }
           ID_LEXER
@@ -190,31 +220,40 @@ Token SimpleLexer::next() {
   }
 
   // UNSIGNED && UNION && ID.
-  if (m_currentCh == 'u') {
+  if (m_currentCh == 'u')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'n') {
+    if (m_currentCh == 'n')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 's') {
+      if (m_currentCh == 's')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'i') {
+        if (m_currentCh == 'i')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'g') {
+          if (m_currentCh == 'g')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 'n') {
+            if (m_currentCh == 'n')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (m_currentCh == 'e') {
+              if (m_currentCh == 'e')
+              {
                 lexeme += m_currentCh;
                 readChar();
-                if (m_currentCh == 'd') {
+                if (m_currentCh == 'd')
+                {
                   lexeme += m_currentCh;
                   readChar();
-                  if (END_TOK) {
+                  if (END_TOK)
+                  {
                     return Token::UNSIGNED;
                   }
                   ID_LEXER
@@ -229,16 +268,20 @@ Token SimpleLexer::next() {
         }
         ID_LEXER
       }
-      if (m_currentCh == 'i') {
+      if (m_currentCh == 'i')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'o') {
+        if (m_currentCh == 'o')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'n') {
+          if (m_currentCh == 'n')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (END_TOK) {
+            if (END_TOK)
+            {
               return Token::UNION;
             }
             ID_LEXER
@@ -253,25 +296,32 @@ Token SimpleLexer::next() {
   }
 
   // SIGNED && STRUCT && SHORT && ID
-  if (m_currentCh == 's') {
+  if (m_currentCh == 's')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'i') {
+    if (m_currentCh == 'i')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'g') {
+      if (m_currentCh == 'g')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'n') {
+        if (m_currentCh == 'n')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'e') {
+          if (m_currentCh == 'e')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 'd') {
+            if (m_currentCh == 'd')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (END_TOK) {
+              if (END_TOK)
+              {
                 return Token::SIGNED;
               }
               ID_LEXER
@@ -284,22 +334,28 @@ Token SimpleLexer::next() {
       }
       ID_LEXER
     }
-    if (m_currentCh == 't') {
+    if (m_currentCh == 't')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'r') {
+      if (m_currentCh == 'r')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'u') {
+        if (m_currentCh == 'u')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'c') {
+          if (m_currentCh == 'c')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 't') {
+            if (m_currentCh == 't')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (END_TOK) {
+              if (END_TOK)
+              {
                 return Token::STRUCT;
               }
               ID_LEXER
@@ -310,19 +366,24 @@ Token SimpleLexer::next() {
         }
         ID_LEXER
       }
-      if (m_currentCh == 'h') {
+      if (m_currentCh == 'h')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'o') {
+        if (m_currentCh == 'o')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'r') {
+          if (m_currentCh == 'r')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 't') {
+            if (m_currentCh == 't')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (END_TOK) {
+              if (END_TOK)
+              {
                 return Token::SHORT;
               }
               ID_LEXER
@@ -339,25 +400,32 @@ Token SimpleLexer::next() {
   }
 
   // DO && DOUBLE && ID.
-  if (m_currentCh == 'd') {
+  if (m_currentCh == 'd')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'o') {
+    if (m_currentCh == 'o')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'u') {
+      if (m_currentCh == 'u')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'b') {
+        if (m_currentCh == 'b')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'l') {
+          if (m_currentCh == 'l')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (m_currentCh == 'e') {
+            if (m_currentCh == 'e')
+            {
               lexeme += m_currentCh;
               readChar();
-              if (END_TOK) {
+              if (END_TOK)
+              {
                 return Token::DOUBLE;
               }
               ID_LEXER
@@ -368,7 +436,8 @@ Token SimpleLexer::next() {
         }
         ID_LEXER
       }
-      if (END_TOK) {
+      if (END_TOK)
+      {
         return Token::FOR;
       }
       ID_LEXER
@@ -377,35 +446,44 @@ Token SimpleLexer::next() {
   }
 
   // FOR && FLOAT && ID.
-  if (m_currentCh == 'f') {
+  if (m_currentCh == 'f')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'o') {
+    if (m_currentCh == 'o')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'r') {
+      if (m_currentCh == 'r')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (END_TOK) {
+        if (END_TOK)
+        {
           return Token::FOR;
         }
         ID_LEXER
       }
       ID_LEXER
     }
-    if (m_currentCh == 'l') {
+    if (m_currentCh == 'l')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'o') {
+      if (m_currentCh == 'o')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'a') {
+        if (m_currentCh == 'a')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 't') {
+          if (m_currentCh == 't')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (END_TOK) {
+            if (END_TOK)
+            {
               return Token::FLOAT;
             }
           }
@@ -419,22 +497,28 @@ Token SimpleLexer::next() {
   }
 
   // WHILE && ID.
-  if (m_currentCh == 'w') {
+  if (m_currentCh == 'w')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'h') {
+    if (m_currentCh == 'h')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'i') {
+      if (m_currentCh == 'i')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'l') {
+        if (m_currentCh == 'l')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (m_currentCh == 'e') {
+          if (m_currentCh == 'e')
+          {
             lexeme += m_currentCh;
             readChar();
-            if (END_TOK) {
+            if (END_TOK)
+            {
               return Token::WHILE;
             }
           }
@@ -448,19 +532,24 @@ Token SimpleLexer::next() {
   }
 
   // LONG && ID.
-  if (m_currentCh == 'l') {
+  if (m_currentCh == 'l')
+  {
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh == 'o') {
+    if (m_currentCh == 'o')
+    {
       lexeme += m_currentCh;
       readChar();
-      if (m_currentCh == 'n') {
+      if (m_currentCh == 'n')
+      {
         lexeme += m_currentCh;
         readChar();
-        if (m_currentCh == 'g') {
+        if (m_currentCh == 'g')
+        {
           lexeme += m_currentCh;
           readChar();
-          if (END_TOK) {
+          if (END_TOK)
+          {
             return Token::LONG;
           }
           ID_LEXER
@@ -473,43 +562,54 @@ Token SimpleLexer::next() {
   }
 
   // IDENTIFIER.
-  if (m_currentCh == '_' || IS_ATOZ) {
+  if (m_currentCh == '_' || IS_ATOZ)
+  {
     lexeme += m_currentCh;
     readChar();
     ID_LEXER
   }
 
-  // CHAR
-  if (m_currentCh == '\'') {
+  // NUMBERCONST-CHAR
+  if (m_currentCh == '\'')
+  {
     readChar();
-    if (m_fileEnd) {
+    if (m_fileEnd)
+    {
       LEXER_ERROR("incomplete char")
     }
     lexeme += m_currentCh;
     readChar();
-    if (m_currentCh != '\'') {
+    if (m_currentCh != '\'')
+    {
       LEXER_ERROR("error when lex char")
     }
     readChar();
-    // TODO: Insert char value to DB.
-    return Token::CHARCONST;
+    char val = lexeme[0];
+    TokVal value;
+    value.LVal = val;
+    m_tokenValDB.push(value);
+    return Token::NUMBERCONST;
   }
 
   // STRING
-  if (m_currentCh == '"') {
+  if (m_currentCh == '"')
+  {
     readChar();
-    while (m_currentCh != '"' && m_currentCh != EOF) {
+    while (m_currentCh != '"' && m_currentCh != EOF)
+    {
       lexeme += m_currentCh;
       readChar();
     }
-    if (m_currentCh == EOF) {
+    if (m_currentCh == EOF)
+    {
       LEXER_ERROR("incomplete string")
     }
-    if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end()) {
+    if (m_strValueDBSet.find(lexeme) == m_strValueDBSet.end())
+    {
       m_strValueDBSet.insert(lexeme);
       m_strValueDB.push_back(lexeme);
       TokVal value;
-      value.ULVal = m_strValueDB.size() - 1;
+      value.LVal = m_strValueDB.size() - 1;
       m_tokenValDB.push(value);
     }
     readChar();
@@ -517,18 +617,22 @@ Token SimpleLexer::next() {
   }
 
   // NOT && NOT_EQ.
-  if (m_currentCh == '!') {
+  if (m_currentCh == '!')
+  {
     readChar();
-    if (m_currentCh == '=') {
+    if (m_currentCh == '=')
+    {
       readChar();
       return Token::NOT_EQ;
     }
     return Token::NOT;
   }
   // EQ && ASSIGN.
-  if (m_currentCh == '=') {
+  if (m_currentCh == '=')
+  {
     readChar();
-    if (m_currentCh == '=') {
+    if (m_currentCh == '=')
+    {
       readChar();
       return Token::EQ;
     }
@@ -536,9 +640,11 @@ Token SimpleLexer::next() {
   }
 
   // AND && AND_AND.
-  if (m_currentCh == '&') {
+  if (m_currentCh == '&')
+  {
     readChar();
-    if (m_currentCh == '&') {
+    if (m_currentCh == '&')
+    {
       readChar();
       return Token::AND_AND;
     }
@@ -546,9 +652,11 @@ Token SimpleLexer::next() {
   }
 
   // OR && OR_OR.
-  if (m_currentCh == '|') {
+  if (m_currentCh == '|')
+  {
     readChar();
-    if (m_currentCh == '|') {
+    if (m_currentCh == '|')
+    {
       readChar();
       return Token::OR_OR;
     }
@@ -556,9 +664,11 @@ Token SimpleLexer::next() {
   }
 
   // LT && LE.
-  if (m_currentCh == '<') {
+  if (m_currentCh == '<')
+  {
     readChar();
-    if (m_currentCh == '=') {
+    if (m_currentCh == '=')
+    {
       readChar();
       return Token::LE;
     }
@@ -566,9 +676,11 @@ Token SimpleLexer::next() {
   }
 
   // GT && GE.
-  if (m_currentCh == '>') {
+  if (m_currentCh == '>')
+  {
     readChar();
-    if (m_currentCh == '=') {
+    if (m_currentCh == '=')
+    {
       readChar();
       return Token::GE;
     }
@@ -576,9 +688,11 @@ Token SimpleLexer::next() {
   }
 
   // ADD && ADD_ADD.
-  if (m_currentCh == '+') {
+  if (m_currentCh == '+')
+  {
     readChar();
-    if (m_currentCh == '+') {
+    if (m_currentCh == '+')
+    {
       readChar();
       return Token::ADD_ADD;
     }
@@ -586,51 +700,70 @@ Token SimpleLexer::next() {
   }
 
   // SUB && SUB_SUB && MEMBER.
-  if (m_currentCh == '-') {
+  if (m_currentCh == '-')
+  {
     readChar();
-    if (m_currentCh == '-') {
+    if (m_currentCh == '-')
+    {
       readChar();
       return Token::SUB_SUB;
     }
-    if (m_currentCh == '>') {
+    if (m_currentCh == '>')
+    {
       readChar();
       return Token::MEMBER;
     }
+    if (IS_DIGIT)
+    {
+      g_isMinus = true;
+      return next();
+    } 
     return Token::SUB;
   }
 
   // DIV && COMMENT.
-  if (m_currentCh == '/') {
+  if (m_currentCh == '/')
+  {
     readChar();
-    if (m_currentCh == '/') {
+    if (m_currentCh == '/')
+    {
       readChar();
-      while (m_currentCh != '\n') {
+      while (m_currentCh != '\n')
+      {
         lexeme += m_currentCh;
       }
       m_strValueDBSet.insert(lexeme);
       m_strValueDB.push_back(lexeme);
       TokVal value;
-      value.ULVal = m_strValueDB.size() - 1;
+      value.LVal = m_strValueDB.size() - 1;
       m_tokenValDB.push(value);
       return Token::COMMENT;
     }
     return Token::DIV;
   }
   // NUMBER.
-  if (m_currentCh > '0' && m_currentCh <= '9') {
+  if (m_currentCh > '0' && m_currentCh <= '9')
+  {
+    if (g_isMinus) {
+      lexeme += "-";
+      g_isMinus = false;
+    }
     lexeme += m_currentCh;
     readChar();
-    if (!IS_DIGIT) {
-      size_t val = convertTo<size_t>(lexeme);
+    if (!IS_DIGIT)
+    {
+      long val = convertTo<long>(lexeme);
       TokVal value;
-      value.ULVal = val;
+      value.LVal = val;
       m_tokenValDB.push(value);
       return Token::NUMBERCONST;
     }
-    if (m_currentCh == '.') {
+    if (m_currentCh == '.')
+    {
       lexeme += ".";
       readChar();
-      while (IS_DIGIT) {
+      while (IS_DIGIT)
+      {
         lexeme += m_currentCh;
         readChar();
       }
@@ -643,13 +776,16 @@ Token SimpleLexer::next() {
   }
 
   // Do not support Octal number.
-  if (m_currentCh == '0') {
+  if (m_currentCh == '0')
+  {
     lexeme += "0";
     readChar();
-    if (m_currentCh == '.') {
+    if (m_currentCh == '.')
+    {
       lexeme += ".";
       readChar();
-      while (IS_DIGIT) {
+      while (IS_DIGIT)
+      {
         lexeme += m_currentCh;
         readChar();
       }
@@ -659,22 +795,24 @@ Token SimpleLexer::next() {
       m_tokenValDB.push(value);
       return Token::NUMBERCONST;
     }
-    if (m_currentCh == 'x' || m_currentCh == 'X') {
+    if (m_currentCh == 'x' || m_currentCh == 'X')
+    {
       lexeme += "x";
       readChar();
-      while (IS_DIGIT || (m_currentCh >= 'A' && m_currentCh <= 'F')) {
+      while (IS_DIGIT || (m_currentCh >= 'A' && m_currentCh <= 'F'))
+      {
         lexeme += m_currentCh;
         readChar();
       }
-      size_t val = convertTo<size_t>(lexeme);
+      long val = convertTo<long>(lexeme);
       TokVal value;
-      value.ULVal = val;
+      value.LVal = val;
       m_tokenValDB.push(value);
       return Token::NUMBERCONST;
     }
-    size_t val = convertTo<size_t>(lexeme);
+    long val = convertTo<long>(lexeme);
     TokVal value;
-    value.ULVal = val;
+    value.LVal = val;
     m_tokenValDB.push(value);
     return Token::NUMBERCONST;
   }
@@ -682,9 +820,11 @@ Token SimpleLexer::next() {
     return Token::END;
   LEXER_ERROR("");
 }
-std::vector<Token> SimpleLexer::lex() {
+std::vector<Token> SimpleLexer::lex()
+{
   std::vector<Token> toks;
-  while (!m_fileEnd) {
+  while (!m_fileEnd)
+  {
     toks.push_back(next());
 #ifdef _DEBUG
     // std::cout << strTok[toks.back()] << std::endl;
@@ -693,7 +833,8 @@ std::vector<Token> SimpleLexer::lex() {
   return toks;
 }
 
-std::string SimpleLexer::strTok(Token tok) {
+std::string SimpleLexer::strTok(Token tok)
+{
   static std::map<Token, std::string> tokToStr{
       {Token::VOID, "VOID"},
       {Token::CHAR, "CHAR"},
@@ -745,7 +886,6 @@ std::string SimpleLexer::strTok(Token tok) {
       {Token::CLOSE_BRAKET, "]"},
       {Token::OPEN_BRACE, "{"},
       {Token::CLOSE_BRACE, "}"},
-      {Token::CHARCONST, "CHARCONST"},
       {Token::END, "EOF"},
   };
 

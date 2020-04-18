@@ -4,6 +4,7 @@
 #include "lexer_impl.h"
 
 #include <iostream>
+#include <stack>
 #include <vector>
 
 namespace front_end {
@@ -22,6 +23,8 @@ public:
 };
 
 class LRParser : public ParserImpl {
+  std::stack<lexer::Token> m_reduceStack;
+  void logMessage(const std::string &);
 public:
   LRParser(std::ostream &errOut) : ParserImpl(errOut) {}
   const AstProgram *parse(const std::vector<lexer::Token> &toks) override;
