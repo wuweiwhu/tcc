@@ -22,6 +22,14 @@ public:
   virtual const AstProgram *parse(const std::vector<lexer::Token> &) = 0;
 };
 
+/// \brief A simple recursive desecent parser.
+class LLParser : public ParserImpl {
+public:
+  LLParser(std::ostream &errOut) : ParserImpl(errOut) {}
+  const AstProgram *parse(const std::vector<lexer::Token> &toks) override;
+};
+
+/// \brief A simple shift reduce parser.
 class LRParser : public ParserImpl {
   std::stack<lexer::Token> m_reduceStack;
   void logMessage(const std::string &);

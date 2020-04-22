@@ -88,19 +88,30 @@ public:
 };
 
 class SimpleLexer : public LexerImpl
-{
+{ 
+  /// Used to indicate whether the next const number is minus.
   static bool g_isMinus;
+  /// Current file.
   const std::string m_filePath;
   std::fstream m_codeStream;
+  /// Indicate whether the whole file has been lexed.
   bool m_fileEnd;
+  /// Current char to process.
   char m_currentCh;
+  /// Current line to process.
   size_t m_currentLine;
+  /// For simple tokens, such as ',', ";", use this map to
+  /// get the Token.
   static std::map<char, Token> s_charToToken;
+  /// DataBase for const string
   std::vector<std::string> m_strValueDB;
-  // For quickly look for m_strValueDB.
+  /// For quickly check whether a string is aready in DB.
   std::set<std::string> m_strValueDBSet;
+  /// Store the value of tokens.
   std::queue<TokVal> m_tokenValDB;
+  /// Get next token.
   Token next();
+  /// Read a char.
   void readChar();
 
 public:
@@ -134,9 +145,9 @@ public:
     size_t index = val.LVal;
     value = m_strValueDB[index];
   }
-
+  /// For print human readable token steam.
   static std::string strTok(Token);
-
+  /// Lex.
   std::vector<Token> lex() override;
 };
 } // namespace lexer
