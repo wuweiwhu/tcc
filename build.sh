@@ -2,4 +2,4 @@
 mkdir -p build
 cd build
 cmake ..
-make all tcc
+make all tcc -j `nproc`
